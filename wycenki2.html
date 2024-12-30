@@ -61,45 +61,45 @@
         }
 
         @media (max-width: 480px) {
-            th, td {
+            table {
                 display: block;
                 width: 100%;
-                box-sizing: border-box;
-            }
-
-            tr {
-                margin-bottom: 10px;
-                display: block;
-            }
-
-            #searchInput, #saveButtonTop, #saveButtonBottom {
-                font-size: 12px;
-                padding: 6px;
-            }
-
-            table {
                 border: none;
             }
 
-            th {
+            thead {
                 display: none;
             }
 
+            tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                padding: 10px;
+            }
+
             td {
+                display: block;
+                font-size: 14px;
+                padding: 5px;
+                text-align: right;
                 border: none;
-                display: flex;
-                justify-content: space-between;
-                padding: 5px 10px;
+                position: relative;
             }
 
             td::before {
                 content: attr(data-label);
-                flex-basis: 40%;
+                position: absolute;
+                left: 0;
+                width: 50%;
                 font-weight: bold;
+                text-align: left;
+                padding-left: 5px;
             }
 
-            td:last-child {
-                margin-bottom: 10px;
+            #searchInput, #saveButtonTop, #saveButtonBottom {
+                font-size: 14px;
+                padding: 8px;
             }
         }
     </style>
@@ -146,7 +146,7 @@
                 const row = document.createElement("tr");
 
                 row.innerHTML = `
-                    <td><input type="checkbox" name="product" value="${product.index}"></td>
+                    <td data-label="Select"><input type="checkbox" name="product" value="${product.index}"></td>
                     <td data-label="Index">${product.index}</td>
                     <td data-label="Name">${product.name}</td>
                     <td data-label="Producer">${product.producer}</td>
