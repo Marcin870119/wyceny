@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,6 +12,19 @@
             padding: 0;
         }
 
+        #menu {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #menu button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
         #searchInput {
             margin: 15px auto;
             padding: 10px;
@@ -21,7 +34,7 @@
             box-sizing: border-box;
         }
 
-        #saveButtonTop, #saveButtonBottom {
+        #saveButtonTop, #saveButtonBottom, #saveDiscountButton {
             margin: 15px auto;
             padding: 10px 20px;
             font-size: 16px;
@@ -48,13 +61,17 @@
             background-color: #f2f2f2;
         }
 
+        .hidden {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             th, td {
                 font-size: 12px;
                 padding: 5px;
             }
 
-            #searchInput, #saveButtonTop, #saveButtonBottom {
+            #searchInput, #saveButtonTop, #saveButtonBottom, #saveDiscountButton {
                 font-size: 14px;
                 padding: 8px;
             }
@@ -97,7 +114,7 @@
                 padding-left: 5px;
             }
 
-            #searchInput, #saveButtonTop, #saveButtonBottom {
+            #searchInput, #saveButtonTop, #saveButtonBottom, #saveDiscountButton {
                 font-size: 14px;
                 padding: 8px;
             }
@@ -106,29 +123,54 @@
 </head>
 <body>
     <h1 style="text-align: center;">Product Selection</h1>
-    <input type="text" id="searchInput" placeholder="Search by Index or Name..." onkeyup="filterTable()">
-    <button id="saveButtonTop" type="button" onclick="saveSelection()">Save Selection</button>
-    <form id="productForm">
-        <table>
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>Index</th>
-                    <th>Name</th>
-                    <th>Producer</th>
-                    <th>Quantity</th>
-                    <th>Group</th>
-                </tr>
-            </thead>
-            <tbody id="productTable">
-                <!-- Rows will be added dynamically -->
-            </tbody>
-        </table>
-        <button id="saveButtonBottom" type="button" onclick="saveSelection()">Save Selection</button>
-    </form>
+
+    <div id="menu">
+        <button onclick="showSection('pricingSection')">Indeksy do Wyceny</button>
+        <button onclick="showSection('discountSection')">Rabat per Producent</button>
+    </div>
+
+    <div id="pricingSection">
+        <input type="text" id="searchInput" placeholder="Search by Index or Name..." onkeyup="filterTable()">
+        <button id="saveButtonTop" type="button" onclick="saveSelection()">Save Selection</button>
+        <form id="productForm">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Index</th>
+                        <th>Name</th>
+                        <th>Producer</th>
+                        <th>Quantity</th>
+                        <th>Group</th>
+                    </tr>
+                </thead>
+                <tbody id="productTable">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+            <button id="saveButtonBottom" type="button" onclick="saveSelection()">Save Selection</button>
+        </form>
+    </div>
+
+    <div id="discountSection" class="hidden">
+        <form id="producerForm">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Producer</th>
+                        <th>Discount (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="producerTable">
+                    <!-- Producer rows will be added dynamically -->
+                </tbody>
+            </table>
+            <button id="saveDiscountButton" type="button" onclick="saveDiscounts()">Save Discounts</button>
+        </form>
+    </div>
 
     <script>
-        // Define the product list here
         let products = [
         {
     "index": 1,
@@ -82334,9 +82376,27 @@
 
         ];
 
-        const tableBody = document.getElementById("productTable");
+        let producers = [
+            "MONDELEZ POLSKA", "AGII", "AGRICO", "AGRO-DANMIS", "AKSAM", "UNILEVER AMINO", "APIS", "AS BABUNI", "ZOTT", "BAHLSEN SWEET", 
+            "HERBAPOL", "PRYMAT", "FOODWELL", "BAKOMA", "ARLA FOODS", "BALCERZAK", "BARTNIK", "ITALMEX", "SMAKMAK", "PGD LUBLIN",
+            "BIELMAR", "GRANA", "BIELUCH", "NUTRICIA", "BONDUELLE", "BRZEŚĆ", "MASPEX MOKRY", "GOBARTO", "CENOS", "FRITO-LAY", 
+            "CISOWIANKA", "COCA-COLA", "HORTEX", "LORENZ", "BELL", "OSM CZARNKÓW", "DAN CAKE", "DANONE", "KIRI", "DAWTONA", "DEGA", 
+            "DELICPOL", "DELITISSUE", "GARMAŻERKA LENA", "SKAWA", "DEVELEY", "WAWEL", "DR GERARD", "KROKUS", "DR OETKER", "DROSED", 
+            "DUDA", "DYSPOL", "EDMAL", "EUROHANSA", "INTERSNACK", "JBB", "FERRERO", "SANTE", "MOKATE", "FOODCARE", "SŁONECZNE POLE",
+            "ZIAJA LTD", "FORTUNA", "GAMMA", "MASPEX LUBELLA", "MARLENKA", "GOLIARD", "COLIAN EXPORT", "GOSTYN", "GRAAL", "HAŃDEREK", 
+            "HELIO", "HOCHLAND", "HOOP POLSKA", "I.D.C.POLONIA", "INDYKPOL", "JACOBS DOUWE EGBERTS", "KABANOS JABŁONKA", "LOTTE WEDEL", 
+            "KRUGER", "KAMIS", "UPFIELD", "KASOL", "UNILEVER KNORR", "KOPERNIK", "KOS", "OSM KOSÓW LACKI", "CARLSBERG", "MASPEX AGROS", 
+            "ANIMEX", "OSM KRASNYSTAW", "BUNGE POLSKA", "KRYNKA", "PRYMAT KUCHAREK", "KUPIEC", "MAXCO DISTRIBUTION", "PAMAPOL", "LACTALIS", 
+            "LALLEMAND", "LAVAZZA", "HELLENA", "UNILEVER LIPTON", "LISNER", "WALDIBEN", "LUKULLUS", "WISŁA", "MALWA", "MAMUT POLSKA",
+            "MAJONEZY KĘTRZYŃSKIE", "MASPEX", "MARS POLSKA", "MELVIT", "BENUS", "MIESZKO", "MILK TRADE", "SM MLEKOVITA", "SM MLEKPOL",
+            "KEWPIE POLAND", "MULLER", "MUSIAL", "MUSZYNIANKA", "MADEJ WRÓBEL", "NESTLE", "NESTLE NUTRITION", "NESTLE WATERS NALECZOWIANKA",
+            "NIVEA", "OCETIX", "OSHEE", "OSKROBA", "PACIFIC", "PEPSI CO", "PROVITUS", "PERFETTI VAN MELLE", "OSM PIĄTNICA", "AMBRA", 
+            "PIWNICZANKA", "PODRAVKA"
+        ];
 
-        // Populate table with products
+        const tableBody = document.getElementById("productTable");
+        const producerTable = document.getElementById("producerTable");
+
         function loadProducts() {
             products.forEach(product => {
                 const row = document.createElement("tr");
@@ -82354,6 +82414,20 @@
             });
         }
 
+        function loadProducers() {
+            producers.forEach(producer => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td data-label="Select"><input type="checkbox" name="producer" value="${producer}"></td>
+                    <td data-label="Producer">${producer}</td>
+                    <td data-label="Discount (%)"><input type="number" name="discount" placeholder="0" min="0" max="100" style="width: 80px;"></td>
+                `;
+
+                producerTable.appendChild(row);
+            });
+        }
+
         function saveSelection() {
             const selectedProducts = [];
             const checkboxes = document.querySelectorAll("input[name='product']:checked");
@@ -82364,18 +82438,42 @@
                 if (product) selectedProducts.push(product);
             });
 
-            // Convert selected products to XLS
             const worksheet = XLSX.utils.json_to_sheet(selectedProducts);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Selected Products");
 
-            // Save file
             XLSX.writeFile(workbook, "selected_products.xlsx");
+        }
+
+        function saveDiscounts() {
+            const selectedProducers = [];
+            const rows = document.querySelectorAll("#producerTable tr");
+
+            rows.forEach(row => {
+                const checkbox = row.querySelector("input[name='producer']:checked");
+                const discountInput = row.querySelector("input[name='discount']");
+
+                if (checkbox && discountInput && discountInput.value && discountInput.value !== "0") {
+                    selectedProducers.push({ Producer: checkbox.value, Discount: `${discountInput.value}%` });
+                }
+            });
+
+            if (selectedProducers.length === 0) {
+                alert("Please select at least one producer and enter discounts.");
+                return;
+            }
+
+            const worksheet = XLSX.utils.json_to_sheet(selectedProducers);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Discounts");
+
+            const fileName = `Rabaty_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
         }
 
         function filterTable() {
             const query = document.getElementById("searchInput").value.toLowerCase().trim();
-            const searchTerms = query.split(" ").filter(term => term !== ""); // Split and filter empty terms
+            const searchTerms = query.split(" ").filter(term => term !== "");
             const rows = document.getElementById("productTable").getElementsByTagName("tr");
 
             for (let i = 0; i < rows.length; i++) {
@@ -82386,7 +82484,6 @@
                     const indexText = indexCell.textContent.toLowerCase() || "";
                     const nameText = nameCell.textContent.toLowerCase() || "";
 
-                    // Check if every term matches either the index or name
                     const matches = searchTerms.every(term =>
                         indexText.includes(term) || nameText.includes(term)
                     );
@@ -82396,8 +82493,15 @@
             }
         }
 
-        // Load products on page load
+        function showSection(sectionId) {
+            document.getElementById("pricingSection").classList.add("hidden");
+            document.getElementById("discountSection").classList.add("hidden");
+
+            document.getElementById(sectionId).classList.remove("hidden");
+        }
+
         loadProducts();
+        loadProducers();
     </script>
 </body>
 </html>
